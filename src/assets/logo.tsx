@@ -5,7 +5,7 @@ import InspetorLogoPNG from './raw/inspetor-logo.png'
 
 export type InspetorLogoProps = Omit<ImageProps, 'src' | 'alt'>
 
-export async function InspetorLogo({ className, ...props }: InspetorLogoProps) {
+export function InspetorLogo({ className, ...props }: InspetorLogoProps) {
   return (
     <Image
       src={InspetorLogoPNG}
