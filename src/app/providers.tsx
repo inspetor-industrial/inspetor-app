@@ -1,7 +1,6 @@
 'use client'
 
 import { AppProgressProvider as ProgressProvider } from '@bprogress/next'
-import { ThemeProvider } from '@ipa/components/theme-provider'
 import { Toaster } from '@ipa/components/ui/sonner'
 import { type ReactNode } from 'react'
 
@@ -20,16 +19,9 @@ export function Providers({ children }: ProvidersProps) {
         showSpinner: false,
       }}
     >
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        {children}
-      </ThemeProvider>
-      <Toaster richColors />
+      {children}
 
+      <Toaster richColors />
       <Modals />
     </ProgressProvider>
   )

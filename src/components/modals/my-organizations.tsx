@@ -2,6 +2,7 @@
 
 import { ModalEvent } from '@ipa/contants/modal-event'
 import { authClient } from '@ipa/lib/auth.client'
+import { cn } from '@ipa/lib/utils'
 import { getFirstLetters } from '@ipa/utils/get-first-letters'
 import { PencilLine, Trash2 } from 'lucide-react'
 import { useEffect, useState, useTransition } from 'react'
@@ -22,6 +23,8 @@ export function MyOrganizations() {
   const [isOpen, setIsOpen] = useState(false)
   const { data: organizations, isPending: isLoadingOrganizations } =
     authClient.useListOrganizations()
+
+  const { data: session } = authClient.useSession()
 
   const [isDeletingOrganization, startDeletingOrganization] = useTransition()
 
@@ -45,6 +48,15 @@ export function MyOrganizations() {
 
   async function handleDeleteOrganization(organizationId: string) {
     startDeletingOrganization(async () => {
+      const response = await authClient.organization.hasPermission({
+        organizationId,
+      })
+
+      if (response.data?.error || response.error) {
+        toast.error('Você não tem permissão para deletar esta empresa')
+        return
+      }
+
       await authClient.organization.delete(
         {
           organizationId,
@@ -104,9 +116,11 @@ export function MyOrganizations() {
                     {/* <Button size="icon" variant="outline">
                       <PencilLine className="size-4" />
                     </Button> */}
+
                     <Button
                       size="icon"
                       variant="destructive"
+                      className={cn()}
                       isLoading={isDeletingOrganization}
                       onClick={() => handleDeleteOrganization(org.id)}
                     >
