@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from '@bprogress/next'
 import { Avatar, AvatarFallback, AvatarImage } from '@ipa/components/ui/avatar'
 import {
   DropdownMenu,
@@ -16,14 +17,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@ipa/components/ui/sidebar'
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
-} from 'lucide-react'
+import { ModalEvent } from '@ipa/contants/modal-event'
+import { authClient } from '@ipa/lib/auth.client'
+import { getFirstLetters } from '@ipa/utils/get-first-letters'
+import { Building, ChevronsUpDown, LogOut, User } from 'lucide-react'
+import { toast } from 'sonner'
+
+import { Skeleton } from './ui/skeleton'
 
 export function NavUser({
   user,
@@ -35,6 +35,8 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { data: session, isPending: isLoadingSession } = authClient.useSession()
+  const router = useRouter()
 
   return (
     <SidebarMenu>
@@ -43,16 +45,40 @@ export function NavUser({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-inspetor-secondary data-[state=open]:text-muted"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
-              </div>
+              {isLoadingSession ? (
+                <Skeleton className="aspect-square size-8 rounded-lg bg-muted-foreground" />
+              ) : (
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage
+                    src={session?.user?.image ?? ''}
+                    alt={session?.user?.name ?? ''}
+                  />
+                  <AvatarFallback className="rounded-lg">
+                    <span className="text-xs text-zinc-950 dark:text-zinc-50">
+                      {session?.user?.name
+                        ? getFirstLetters(session?.user?.name)
+                        : 'UU'}
+                    </span>
+                  </AvatarFallback>
+                </Avatar>
+              )}
+              {isLoadingSession ? (
+                <div className="grid flex-1 text-left text-sm leading-tight gap-1">
+                  <Skeleton className="h-3 w-24 rounded-lg bg-muted-foreground" />
+                  <Skeleton className="h-3 w-24 rounded-lg bg-muted-foreground" />
+                </div>
+              ) : (
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">
+                    {session?.user?.name ?? ''}
+                  </span>
+                  <span className="truncate text-xs">
+                    {session?.user?.email ?? ''}
+                  </span>
+                </div>
+              )}
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -60,44 +86,72 @@ export function NavUser({
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
             side={isMobile ? 'bottom' : 'right'}
             align="end"
-            sideOffset={4}
+            sideOffset={isMobile ? 4 : 10}
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage
+                    src={session?.user?.image ?? ''}
+                    alt={session?.user?.name ?? ''}
+                  />
+                  <AvatarFallback className="rounded-lg">
+                    {session?.user?.name
+                      ? getFirstLetters(session?.user?.name)
+                      : 'UU'}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">
+                    {session?.user?.name ?? ''}
+                  </span>
+                  <span className="truncate text-xs">
+                    {session?.user?.email ?? ''}
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
+              <DropdownMenuItem
+                onClick={() => {
+                  const event = new CustomEvent(ModalEvent.MY_ORGANIZATIONS)
+                  window.dispatchEvent(event)
+                }}
+                className="cursor-pointer"
+              >
+                <Building />
+                Minhas Empresas
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  router.push('/profile')
+                }}
+                className="cursor-pointer"
+              >
+                <User />
+                Perfil
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                await authClient.signOut(
+                  {},
+                  {
+                    onError: (error) => {
+                      toast.error(error.error.message)
+                    },
+                    onSuccess: () => {
+                      toast.success('Saiu com sucesso')
+
+                      router.push('/auth/sign-in')
+                    },
+                  },
+                )
+              }}
+              className="cursor-pointer"
+            >
               <LogOut />
               Log out
             </DropdownMenuItem>

@@ -4,6 +4,8 @@ import { AppProgressProvider as ProgressProvider } from '@bprogress/next'
 import { Toaster } from '@ipa/components/ui/sonner'
 import { type ReactNode } from 'react'
 
+import { Modals } from './modals'
+
 type ProvidersProps = {
   children: ReactNode | ReactNode[]
 }
@@ -19,6 +21,8 @@ export function Providers({ children }: ProvidersProps) {
     >
       {children}
       <Toaster richColors />
+
+      <Modals />
     </ProgressProvider>
   )
 }

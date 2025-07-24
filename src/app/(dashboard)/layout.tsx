@@ -4,7 +4,7 @@ import { SidebarInset, SidebarProvider } from '@ipa/components/ui/sidebar'
 import { auth } from '@ipa/lib/auth'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { type ReactNode, Suspense } from 'react'
+import { type ReactNode } from 'react'
 
 type DashboardLayoutProps = {
   children: ReactNode | ReactNode[]
@@ -23,9 +23,7 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <Suspense>
-        <AppSidebar />
-      </Suspense>
+      <AppSidebar />
 
       <SidebarInset>
         <Header />

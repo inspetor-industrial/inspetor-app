@@ -61,7 +61,7 @@ function Button({
       {isLoading && (
         <Loader className="size-4 animate-spin text-white dark:text-black" />
       )}
-      {children}
+      {size === 'icon' && isLoading ? <></> : children}
     </Comp>
   )
 }
