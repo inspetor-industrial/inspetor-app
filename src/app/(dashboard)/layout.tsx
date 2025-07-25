@@ -2,6 +2,7 @@ import { AppSidebar } from '@ipa/components/app-sidebar'
 import { Header } from '@ipa/components/header'
 import { SidebarInset, SidebarProvider } from '@ipa/components/ui/sidebar'
 import { auth } from '@ipa/lib/auth'
+import { prisma } from '@ipa/lib/prisma'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { type ReactNode } from 'react'
@@ -21,9 +22,28 @@ export default async function DashboardLayout({
     redirect('/auth/sign-in')
   }
 
+  let hasPermissionToAddOrganization = false
+  if (session?.user) {
+    try {
+      const userOnDb = await prisma.user.findUnique({
+        where: {
+          id: session.user.id,
+        },
+      })
+
+      if (userOnDb?.role === 'ADMIN') {
+        hasPermissionToAddOrganization = true
+      }
+    } catch {
+      hasPermissionToAddOrganization = false
+    }
+  }
+
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar
+        hasPermissionToAddOrganization={hasPermissionToAddOrganization}
+      />
 
       <SidebarInset>
         <Header />

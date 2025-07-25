@@ -11,7 +11,7 @@ import { ModalEvent } from '@ipa/contants/modal-event'
 import { authClient } from '@ipa/lib/auth.client'
 import { getFirstLetters } from '@ipa/utils/get-first-letters'
 import { ChevronsUpDown, Plus } from 'lucide-react'
-import { useEffect } from 'react'
+import { Fragment, useEffect } from 'react'
 
 import {
   DropdownMenu,
@@ -22,7 +22,13 @@ import {
 } from './ui/dropdown-menu'
 import { Skeleton } from './ui/skeleton'
 
-export function TeamSwitcher() {
+type TeamSwitcherProps = {
+  hasPermissionToAddOrganization?: boolean
+}
+
+export function TeamSwitcher({
+  hasPermissionToAddOrganization = false,
+}: TeamSwitcherProps) {
   const { data: organizations, isPending: isLoadingOrganizations } =
     authClient.useListOrganizations()
   const {
@@ -123,15 +129,18 @@ export function TeamSwitcher() {
               ))
             )}
 
-            <DropdownMenuSeparator className="" />
-
-            <DropdownMenuItem
-              className="cursor-pointer flex items-center gap-2 justify-center"
-              onClick={handleOpenCreateOrganizationModal}
-            >
-              <Plus className="size-4" />
-              <span>Adicionar Empresa</span>
-            </DropdownMenuItem>
+            {hasPermissionToAddOrganization && (
+              <Fragment>
+                <DropdownMenuSeparator className="" />
+                <DropdownMenuItem
+                  className="cursor-pointer flex items-center gap-2 justify-center"
+                  onClick={handleOpenCreateOrganizationModal}
+                >
+                  <Plus className="size-4" />
+                  <span>Adicionar Empresa</span>
+                </DropdownMenuItem>
+              </Fragment>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

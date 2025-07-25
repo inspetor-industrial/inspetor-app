@@ -91,11 +91,20 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type AppSidebarProps = {
+  hasPermissionToAddOrganization?: boolean
+}
+
+export function AppSidebar({
+  hasPermissionToAddOrganization = false,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher />
+        <TeamSwitcher
+          hasPermissionToAddOrganization={hasPermissionToAddOrganization}
+        />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
