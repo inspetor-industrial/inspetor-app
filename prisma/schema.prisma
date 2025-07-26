@@ -100,6 +100,7 @@ model Organization {
   metadata    String?
   members     Member[]
   invitations Invitation[]
+  clients     Clients[]
 
   @@unique([slug])
   @@map("organization")
@@ -129,4 +130,29 @@ model Invitation {
   user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
   @@map("invitation")
+}
+
+model Clients {
+  id String @id @default(cuid())
+
+  state String
+  city  String
+
+  companyName String @map("company_name")
+  document    String @unique
+
+  state_registration String
+
+  address String
+  cep     String
+  phone   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([document])
+  @@map("clients")
 }
